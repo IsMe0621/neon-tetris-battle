@@ -1,5 +1,5 @@
 {
-  "name": "Copy of Neon Tetris Battle",
+  "name": "霓虹方塊對決",
   "description": "A feature-rich Tetris implementation with Single Player, Local Multiplayer (Shared Keyboard), and Simulated Online Battle modes. Features wall kicks, hard drops, hold mechanics, and garbage line attacks.",
   "requestFramePermissions": []
 }

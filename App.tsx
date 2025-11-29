@@ -6,7 +6,7 @@ import ControlsOverlay from './components/ControlsOverlay';
 import IAPModal from './components/IAPModal';
 import { GameMode, GameStatus, LevelConfig } from './types';
 import { CONTROLS_P1, CONTROLS_P2, MATCH_TIME, CAMPAIGN_LEVELS, SHOP_ITEMS } from './constants';
-import { Play, Users, Clock, Pause, RotateCcw, Lock, Unlock, ShoppingCart, Globe, ArrowLeft, Trophy, Coins, Volume2, VolumeX, Plus } from 'lucide-react';
+import { Play, Users, Clock, Pause, RotateCcw, Lock, Unlock, ShoppingCart, Globe, ArrowLeft, Trophy, Coins, Volume2, VolumeX, Plus, ArrowUp, ArrowDown, ArrowRight, Smartphone } from 'lucide-react';
 import { soundManager } from './utils/sound';
 
 const App: React.FC = () => {
@@ -30,6 +30,9 @@ const App: React.FC = () => {
   const [roomCode, setRoomCode] = useState<string>('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [onlineStatusMsg, setOnlineStatusMsg] = useState('');
+
+  // Mobile Restriction State
+  const [showDeviceRestriction, setShowDeviceRestriction] = useState(false);
 
   // Background Style
   const activeBg = SHOP_ITEMS.find(i => i.id === currentBgId)?.bgClass || SHOP_ITEMS[0].bgClass;
@@ -65,6 +68,19 @@ const App: React.FC = () => {
     p2.reset();
     
     soundManager.playBGM();
+
+    // Attempt to lock orientation (Mobile: Portrait, Tablet/Desktop: Landscape)
+    if (typeof screen !== 'undefined' && 'orientation' in screen && 'lock' in screen.orientation) {
+        const isMobile = window.innerWidth < 768;
+        try {
+            // @ts-ignore
+            const promise = isMobile ? screen.orientation.lock('portrait') : screen.orientation.lock('landscape');
+            // @ts-ignore
+            promise.catch((e) => console.log("Orientation lock not supported/allowed", e));
+        } catch (e) {
+            // Ignore errors
+        }
+    }
 
     if (mode === GameMode.CAMPAIGN_GAME && level) {
       setCurrentLevel(level);
@@ -213,109 +229,116 @@ const App: React.FC = () => {
   };
 
   const renderMainMenu = () => (
-      <div className="z-10 flex flex-col md:flex-row gap-8 w-full max-w-5xl justify-center items-stretch h-[60vh] animate-fade-in-up">
+      <div className="z-10 flex flex-col md:flex-row gap-2 md:gap-4 w-full max-w-5xl justify-center items-stretch animate-fade-in-up px-4">
           {/* SINGLE PLAYER CARD */}
           <button 
              onClick={() => setGameMode(GameMode.MENU_SINGLE_SELECT)}
-             className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 hover:bg-cyan-900/50 hover:border-cyan-400 hover:scale-105 transition-all shadow-2xl group"
+             className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 hover:bg-cyan-900/50 hover:border-cyan-400 hover:scale-105 transition-all shadow-xl group h-[22vh] md:h-auto md:min-h-[250px]"
           >
-              <div className="bg-slate-900 p-6 rounded-full group-hover:bg-cyan-500 transition-colors">
-                 <Trophy size={64} className="text-cyan-400 group-hover:text-white" />
+              <div className="bg-slate-900 p-3 md:p-4 rounded-full group-hover:bg-cyan-500 transition-colors">
+                 <Trophy size={32} className="md:w-12 md:h-12 text-cyan-400 group-hover:text-white" />
               </div>
-              <h2 className="text-3xl font-black text-white">單人模式</h2>
-              <p className="text-slate-400 text-center">自我挑戰、闖關冒險與無盡練習</p>
+              <h2 className="text-xl md:text-2xl font-black text-white">單人模式</h2>
+              <p className="text-slate-400 text-xs md:text-sm text-center">自我挑戰、闖關冒險與無盡練習</p>
           </button>
 
           {/* MULTI PLAYER CARD */}
           <button 
              onClick={() => setGameMode(GameMode.MENU_DOUBLE_SELECT)}
-             className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 hover:bg-purple-900/50 hover:border-purple-400 hover:scale-105 transition-all shadow-2xl group"
+             className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 hover:bg-purple-900/50 hover:border-purple-400 hover:scale-105 transition-all shadow-xl group h-[22vh] md:h-auto md:min-h-[250px]"
           >
-              <div className="bg-slate-900 p-6 rounded-full group-hover:bg-purple-500 transition-colors">
-                 <Users size={64} className="text-purple-400 group-hover:text-white" />
+              <div className="bg-slate-900 p-3 md:p-4 rounded-full group-hover:bg-purple-500 transition-colors">
+                 <Users size={32} className="md:w-12 md:h-12 text-purple-400 group-hover:text-white" />
               </div>
-              <h2 className="text-3xl font-black text-white">雙人單機/連線</h2>
-              <p className="text-slate-400 text-center">本機雙打或線上連線對決</p>
+              <h2 className="text-xl md:text-2xl font-black text-white">雙人單機/連線</h2>
+              <p className="text-slate-400 text-xs md:text-sm text-center">本機雙打或線上連線對決</p>
           </button>
 
           {/* SHOP CARD */}
           <button 
              onClick={() => setGameMode(GameMode.SHOP)}
-             className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 hover:bg-emerald-900/50 hover:border-emerald-400 hover:scale-105 transition-all shadow-2xl group"
+             className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center gap-2 md:gap-4 hover:bg-emerald-900/50 hover:border-emerald-400 hover:scale-105 transition-all shadow-xl group h-[22vh] md:h-auto md:min-h-[250px]"
           >
-              <div className="bg-slate-900 p-6 rounded-full group-hover:bg-emerald-500 transition-colors">
-                 <ShoppingCart size={64} className="text-emerald-400 group-hover:text-white" />
+              <div className="bg-slate-900 p-3 md:p-4 rounded-full group-hover:bg-emerald-500 transition-colors">
+                 <ShoppingCart size={32} className="md:w-12 md:h-12 text-emerald-400 group-hover:text-white" />
               </div>
-              <h2 className="text-3xl font-black text-white">主題商店</h2>
-              <p className="text-slate-400 text-center">使用金幣解鎖酷炫背景</p>
+              <h2 className="text-xl md:text-2xl font-black text-white">主題商店</h2>
+              <p className="text-slate-400 text-xs md:text-sm text-center">使用金幣解鎖酷炫背景</p>
           </button>
       </div>
   );
 
   const renderSingleSelect = () => (
-      <div className="z-10 flex flex-col items-center w-full max-w-6xl h-full justify-center">
-          <h2 className="text-4xl font-black text-white mb-8 tracking-wider text-shadow-lg">單人模式選擇</h2>
+      <div className="z-10 flex flex-col items-center w-full max-w-4xl h-full justify-center pt-24 md:pt-32 pb-10">
+          <h2 className="text-3xl font-black text-white mb-6 tracking-wider text-shadow-lg">單人模式選擇</h2>
           
-          <div className="flex flex-col md:flex-row gap-8 w-full justify-center items-stretch h-[50vh] animate-fade-in-up px-4">
+          <div className="flex flex-col md:flex-row gap-4 w-full justify-center items-stretch animate-fade-in-up px-4">
               <button 
                  onClick={() => setGameMode(GameMode.CAMPAIGN_SELECT)}
-                 className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 hover:bg-cyan-900/50 hover:border-cyan-400 hover:scale-105 transition-all shadow-2xl group"
+                 className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-2xl p-6 md:p-4 flex flex-col items-center justify-center gap-4 hover:bg-cyan-900/50 hover:border-cyan-400 hover:scale-105 transition-all shadow-xl group h-[30vh] md:h-auto md:min-h-[120px] lg:min-h-[200px]"
               >
-                  <div className="bg-slate-900 p-6 rounded-full group-hover:bg-cyan-500 transition-colors">
-                     <Trophy size={64} className="text-cyan-400 group-hover:text-white" />
+                  <div className="bg-slate-900 p-4 rounded-full group-hover:bg-cyan-500 transition-colors">
+                     <Trophy size={48} className="text-cyan-400 group-hover:text-white" />
                   </div>
-                  <h2 className="text-3xl font-black text-white">闖關挑戰</h2>
-                  <p className="text-slate-400 text-center">達成目標分數或限時生存賺取金幣</p>
+                  <h2 className="text-2xl font-black text-white">闖關挑戰</h2>
+                  <p className="text-slate-400 text-sm text-center">達成目標分數或限時生存賺取金幣</p>
               </button>
 
               <button 
                  onClick={() => startGame(GameMode.SINGLE)}
-                 className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 hover:bg-blue-900/50 hover:border-blue-400 hover:scale-105 transition-all shadow-2xl group"
+                 className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-2xl p-6 md:p-4 flex flex-col items-center justify-center gap-4 hover:bg-blue-900/50 hover:border-blue-400 hover:scale-105 transition-all shadow-xl group h-[30vh] md:h-auto md:min-h-[120px] lg:min-h-[200px]"
               >
-                  <div className="bg-slate-900 p-6 rounded-full group-hover:bg-blue-500 transition-colors">
-                     <Play size={64} className="text-blue-400 group-hover:text-white" />
+                  <div className="bg-slate-900 p-4 rounded-full group-hover:bg-blue-500 transition-colors">
+                     <Play size={48} className="text-blue-400 group-hover:text-white" />
                   </div>
-                  <h2 className="text-3xl font-black text-white">無盡練習</h2>
-                  <p className="text-slate-400 text-center">無時間限制，單純享受堆疊樂趣</p>
+                  <h2 className="text-2xl font-black text-white">無盡練習</h2>
+                  <p className="text-slate-400 text-sm text-center">無時間限制，單純享受堆疊樂趣</p>
               </button>
           </div>
           
-          <button onClick={() => setGameMode(GameMode.MENU_MAIN)} className="mt-12 text-slate-400 hover:text-white flex items-center gap-2 text-lg font-bold bg-slate-900/50 px-6 py-2 rounded-full border border-slate-700 hover:border-white transition-all">
-              <ArrowLeft /> 返回主選單
+          <button onClick={() => setGameMode(GameMode.MENU_MAIN)} className="mt-8 text-slate-400 hover:text-white flex items-center gap-2 text-base font-bold bg-slate-900/50 px-6 py-2 rounded-full border border-slate-700 hover:border-white transition-all">
+              <ArrowLeft size={18} /> 返回主選單
           </button>
       </div>
   );
 
   const renderDoubleSelect = () => (
-      <div className="z-10 flex flex-col items-center w-full max-w-6xl h-full justify-center">
-          <h2 className="text-4xl font-black text-white mb-8 tracking-wider text-shadow-lg">雙人對戰選擇</h2>
+      <div className="z-10 flex flex-col items-center w-full max-w-4xl h-full justify-center pt-24 md:pt-32 pb-10">
+          <h2 className="text-3xl font-black text-white mb-6 tracking-wider text-shadow-lg">雙人對戰選擇</h2>
           
-          <div className="flex flex-col md:flex-row gap-8 w-full justify-center items-stretch h-[50vh] animate-fade-in-up px-4">
+          <div className="flex flex-col md:flex-row gap-4 w-full justify-center items-stretch animate-fade-in-up px-4">
               <button 
-                 onClick={() => startGame(GameMode.LOCAL_VS)}
-                 className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 hover:bg-purple-900/50 hover:border-purple-400 hover:scale-105 transition-all shadow-2xl group"
+                 onClick={() => {
+                     // Mobile Restriction for Local VS
+                     if (window.innerWidth < 768) {
+                         setShowDeviceRestriction(true);
+                     } else {
+                         startGame(GameMode.LOCAL_VS);
+                     }
+                 }}
+                 className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-2xl p-6 md:p-4 flex flex-col items-center justify-center gap-4 hover:bg-purple-900/50 hover:border-purple-400 hover:scale-105 transition-all shadow-xl group h-[30vh] md:h-auto md:min-h-[120px] lg:min-h-[200px]"
               >
-                  <div className="bg-slate-900 p-6 rounded-full group-hover:bg-purple-500 transition-colors">
-                     <Users size={64} className="text-purple-400 group-hover:text-white" />
+                  <div className="bg-slate-900 p-4 rounded-full group-hover:bg-purple-500 transition-colors">
+                     <Users size={48} className="text-purple-400 group-hover:text-white" />
                   </div>
-                  <h2 className="text-3xl font-black text-white">本機雙打</h2>
-                  <p className="text-slate-400 text-center">同一台電腦，左右互搏 (WASD vs 方向鍵)</p>
+                  <h2 className="text-2xl font-black text-white">本機雙打</h2>
+                  <p className="text-slate-400 text-sm text-center">同一台電腦，左右互搏 (WASD vs 方向鍵)</p>
               </button>
 
               <button 
                  onClick={() => setGameMode(GameMode.LOBBY)}
-                 className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-3xl p-8 flex flex-col items-center justify-center gap-6 hover:bg-pink-900/50 hover:border-pink-400 hover:scale-105 transition-all shadow-2xl group"
+                 className="flex-1 bg-slate-800/80 backdrop-blur border border-slate-600 rounded-2xl p-6 md:p-4 flex flex-col items-center justify-center gap-4 hover:bg-pink-900/50 hover:border-pink-400 hover:scale-105 transition-all shadow-xl group h-[30vh] md:h-auto md:min-h-[120px] lg:min-h-[200px]"
               >
-                  <div className="bg-slate-900 p-6 rounded-full group-hover:bg-pink-500 transition-colors">
-                     <Globe size={64} className="text-pink-400 group-hover:text-white" />
+                  <div className="bg-slate-900 p-4 rounded-full group-hover:bg-pink-500 transition-colors">
+                     <Globe size={48} className="text-pink-400 group-hover:text-white" />
                   </div>
-                  <h2 className="text-3xl font-black text-white">連線對戰</h2>
-                  <p className="text-slate-400 text-center">建立房間或輸入代碼與遠端好友對戰</p>
+                  <h2 className="text-2xl font-black text-white">連線對戰</h2>
+                  <p className="text-slate-400 text-sm text-center">建立房間或輸入代碼與遠端好友對戰</p>
               </button>
           </div>
 
-          <button onClick={() => setGameMode(GameMode.MENU_MAIN)} className="mt-12 text-slate-400 hover:text-white flex items-center gap-2 text-lg font-bold bg-slate-900/50 px-6 py-2 rounded-full border border-slate-700 hover:border-white transition-all">
-              <ArrowLeft /> 返回主選單
+          <button onClick={() => setGameMode(GameMode.MENU_MAIN)} className="mt-8 text-slate-400 hover:text-white flex items-center gap-2 text-base font-bold bg-slate-900/50 px-6 py-2 rounded-full border border-slate-700 hover:border-white transition-all">
+              <ArrowLeft size={18} /> 返回主選單
           </button>
       </div>
   );
@@ -342,12 +365,24 @@ const App: React.FC = () => {
   // 1. MENU SYSTEM (Main, Single Select, Double Select)
   if (gameMode === GameMode.MENU_MAIN || gameMode === GameMode.MENU_SINGLE_SELECT || gameMode === GameMode.MENU_DOUBLE_SELECT) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center relative overflow-hidden font-sans">
-        <div className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ${activeBg}`}></div>
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center relative overflow-y-auto overflow-x-hidden font-sans py-12">
+        <div className={`fixed inset-0 bg-cover bg-center transition-all duration-1000 ${activeBg}`}></div>
         
+        {/* Device Restriction Modal */}
+        {showDeviceRestriction && (
+             <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fade-in">
+                <div className="bg-slate-800 p-8 rounded-2xl max-w-sm text-center border border-slate-600 shadow-2xl relative">
+                     <Smartphone className="mx-auto text-red-400 mb-4 drop-shadow-lg" size={48} />
+                     <h3 className="text-2xl font-black text-white mb-2">不支援手機模式</h3>
+                     <p className="text-slate-300 mb-6 text-sm">雙人單機模式需要較大的螢幕空間，僅支援平板或電腦遊玩。</p>
+                     <button onClick={() => setShowDeviceRestriction(false)} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-cyan-900/50">我知道了</button>
+                </div>
+             </div>
+        )}
+
         {/* Header Title */}
-        <div className="absolute top-10 text-center z-10">
-            <h1 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 tracking-tighter filter drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">
+        <div className="absolute top-10 text-center z-10 w-full">
+            <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 tracking-tighter filter drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">
                 霓虹方塊對決
             </h1>
         </div>
@@ -369,12 +404,6 @@ const App: React.FC = () => {
         {gameMode === GameMode.MENU_MAIN && renderMainMenu()}
         {gameMode === GameMode.MENU_SINGLE_SELECT && renderSingleSelect()}
         {gameMode === GameMode.MENU_DOUBLE_SELECT && renderDoubleSelect()}
-
-        <style>{`
-            .menu-btn {
-                @apply flex items-center justify-center gap-3 py-4 px-6 text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 text-lg;
-            }
-        `}</style>
       </div>
     );
   }
@@ -382,7 +411,7 @@ const App: React.FC = () => {
   // 2. SHOP
   if (gameMode === GameMode.SHOP) {
       return (
-        <div className="min-h-screen bg-slate-900 flex flex-col items-center p-8 relative">
+        <div className="min-h-screen bg-slate-900 flex flex-col items-center p-8 relative h-screen overflow-y-auto">
              <div className={`absolute inset-0 bg-cover bg-center opacity-20 ${activeBg}`}></div>
              {showIAP && <IAPModal onClose={() => setShowIAP(false)} onPurchase={(a) => setGold(g => g + a)} />}
              
@@ -441,7 +470,7 @@ const App: React.FC = () => {
   // 3. CAMPAIGN SELECT
   if (gameMode === GameMode.CAMPAIGN_SELECT) {
       return (
-          <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center relative">
+          <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center relative h-screen overflow-y-auto">
               <div className={`absolute inset-0 bg-cover bg-center opacity-20 ${activeBg}`}></div>
               <div className="z-10 w-full max-w-4xl p-8 bg-slate-950/90 rounded-3xl border border-slate-700 shadow-2xl">
                   <div className="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
@@ -586,16 +615,39 @@ const App: React.FC = () => {
       </div>
 
       {/* GAME AREA */}
-      <div className="z-10 flex flex-wrap items-start justify-center gap-8 md:gap-16 relative">
+      <div className="z-10 flex flex-wrap items-start justify-center gap-8 md:gap-16 relative w-full h-full max-h-[85vh]">
           
           {/* PLAYER 1 */}
-          <div className="flex gap-4 bg-slate-950/50 p-4 rounded-xl backdrop-blur-sm border border-slate-800 shadow-2xl">
+          <div className="flex gap-4 bg-slate-950/50 p-4 rounded-xl backdrop-blur-sm border border-slate-800 shadow-2xl relative">
              <div className="flex flex-col gap-4">
                 <GameHUD stats={p1.stats} nextPiece={p1.nextPiece} holdPiece={p1.holdPiece} label={gameMode === GameMode.SINGLE || gameMode === GameMode.CAMPAIGN_GAME ? "玩家數據" : "玩家 1"} />
-                {(gameMode === GameMode.LOCAL_VS || gameMode === GameMode.SINGLE || gameMode === GameMode.CAMPAIGN_GAME) && <ControlsOverlay controls={CONTROLS_P1} />}
+                
+                {/* Desktop Legend (Restored Here) */}
+                {(gameMode === GameMode.LOCAL_VS || gameMode === GameMode.SINGLE || gameMode === GameMode.CAMPAIGN_GAME) && (
+                    <div className="hidden md:flex flex-col gap-1 p-2 bg-slate-900/50 rounded text-slate-500 text-xs mb-2 w-24">
+                        <div className="flex justify-between items-center"><span>移動</span> <span className="flex gap-0.5 bg-slate-800 px-1 rounded text-[10px]"><ArrowLeft size={10}/><ArrowRight size={10}/></span></div>
+                        <div className="flex justify-between items-center"><span>旋轉</span> <span className="bg-slate-800 px-1 rounded flex items-center text-[10px]">W / <ArrowUp size={10}/></span></div>
+                        <div className="flex justify-between items-center"><span>加速</span> <span className="bg-slate-800 px-1 rounded flex items-center text-[10px]">S / <ArrowDown size={10}/></span></div>
+                        <div className="flex justify-between items-center"><span>硬降</span> <span className="bg-slate-800 px-1 rounded flex items-center text-[10px]">Space</span></div>
+                    </div>
+                )}
              </div>
-             <div className="relative">
+             <div className="relative w-full h-full">
                  <TetrisBoard grid={p1.displayGrid} playerId="p1" />
+                 
+                 {/* Mobile Touch Overlay - Directly on top of the board */}
+                 {(gameMode === GameMode.LOCAL_VS || gameMode === GameMode.SINGLE || gameMode === GameMode.CAMPAIGN_GAME) && (
+                    <ControlsOverlay 
+                        className="absolute inset-0 z-30" 
+                        onMoveLeft={p1.controls.moveLeft}
+                        onMoveRight={p1.controls.moveRight}
+                        onRotate={p1.controls.rotate}
+                        onSoftDrop={p1.controls.softDrop}
+                        onHardDrop={p1.controls.hardDrop}
+                        onHold={p1.controls.hold}
+                    />
+                 )}
+
                  {winner === 'P1' && <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-20 backdrop-blur-sm"><div className="text-4xl font-black text-yellow-400 animate-bounce drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] border-4 border-yellow-400 p-4 rounded-xl rotate-[-10deg]">WINNER!</div></div>}
              </div>
           </div>
@@ -611,7 +663,7 @@ const App: React.FC = () => {
           {/* PLAYER 2 / CPU */}
           {(gameMode === GameMode.LOCAL_VS || gameMode === GameMode.ONLINE_VS) && (
             <div className="flex gap-4 flex-row-reverse md:flex-row bg-slate-950/50 p-4 rounded-xl backdrop-blur-sm border border-slate-800 shadow-2xl">
-                <div className="relative">
+                <div className="relative w-full h-full">
                     <TetrisBoard grid={p2.displayGrid} playerId="p2" />
                     {winner === 'P2' && <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-20 backdrop-blur-sm"><div className="text-4xl font-black text-yellow-400 animate-bounce drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] border-4 border-yellow-400 p-4 rounded-xl rotate-[10deg]">WINNER!</div></div>}
                     {gameMode === GameMode.ONLINE_VS && (
@@ -623,7 +675,6 @@ const App: React.FC = () => {
                 </div>
                 <div className="flex flex-col gap-4">
                     <GameHUD stats={p2.stats} nextPiece={p2.nextPiece} holdPiece={p2.holdPiece} label={gameMode === GameMode.ONLINE_VS ? "對手" : "玩家 2"} />
-                    {gameMode === GameMode.LOCAL_VS && <ControlsOverlay controls={CONTROLS_P2} />}
                 </div>
             </div>
           )}
@@ -680,11 +731,6 @@ const App: React.FC = () => {
               </div>
           </div>
       )}
-      
-      {/* MOBILE WARNING */}
-      <div className="md:hidden absolute bottom-4 left-0 right-0 text-center text-slate-500 text-xs px-4">
-           建議使用電腦版瀏覽器以獲得最佳雙人鍵盤操作體驗
-      </div>
     </div>
   );
 };

@@ -299,7 +299,7 @@ export const useTetris = ({
                    const bgY = piece.y + y;
                    const bgX = piece.x + x;
                    if (bgY >= 0 && bgY < BOARD_HEIGHT && bgX >= 0 && bgX < BOARD_WIDTH) {
-                       renderGrid[bgY][bgX] = { type: piece.type, locked: false };
+                       renderGrid[bgY][bgX] = { type: piece.type, locked: false, ghost: false };
                    }
                 }
             });
@@ -430,6 +430,15 @@ export const useTetris = ({
     holdPiece,
     stats,
     receiveGarbage,
-    reset
+    reset,
+    // Expose controls for Touch UI
+    controls: {
+        moveLeft: () => { if(move(-1, 0)) updateDisplay(); },
+        moveRight: () => { if(move(1, 0)) updateDisplay(); },
+        rotate: () => { rotate(); updateDisplay(); },
+        softDrop: () => { if(move(0, 1)) { statsRef.current.score += 1; updateDisplay(); } },
+        hardDrop: () => hardDrop(),
+        hold: () => { hold(); updateDisplay(); }
+    }
   };
 };
